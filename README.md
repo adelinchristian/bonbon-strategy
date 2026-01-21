@@ -56,9 +56,9 @@ Add this to your dashboard configuration. Change the translations and options as
 strategy:
   type: custom:bonbon-strategy
   options:
-    # max_columns: 1
-    # use_graphs: true
-    # weather_entity_id: auto
+    max_columns: 1
+    use_graphs: true
+    weather_entity_id: auto
     translations:
       overview: Übersicht
       favorites: Favoriten
