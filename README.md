@@ -1,2 +1,33 @@
-# bonbon-strategy
-A Home Assistant strategy which automatically generates a colorful dashboard.
+# 🍬 Bonbon Strategy
+Bonbon Strategy is a Home Assistant strategy which automatically generates a colorful dashboard.
+
+<img width="526" height="331" alt="image" src="https://github.com/user-attachments/assets/d0d2390a-6dc3-4fd1-bae8-4ce18e1e1ef6" />
+
+## Installation
+1. Install Bubble Card
+2. [optional] Install Lovelace Mini Graph Card (for temperature and humidity graphs)
+3. [optional] Install card mod (to make the graphs look more like Bubble Cards)
+4. Download `bonbon-strategy.js`
+5. Place `bonbon-strategy.js` in `<config>/www/bonbon-strategy.js` (restart HA if `/www` didn't exist!)
+6. Go to `Settings` > `Dashboards` > `⋮` > `Resources` > `Add resource` and enter `/local/bonbon-strategy.js` then add
+7. Go to `Settings` > `Dashboards` > `Add dashboard` > `New empty dashboard` then create
+8. Go to the new `Dashboard` > `✎` > `Raw configuration`, paste the configuration from below, then save
+9. Clear your frontend cache!
+
+Done!
+
+## Configuration
+Add this to your dashboard configuration. Change the translations and options as needed.
+```
+strategy:
+  type: custom:bonbon-strategy
+  options:
+    max_columns: 1
+    # use_graphs: true
+    translations:
+      overview: Übersicht
+      favorites: Favoriten
+      lights: Beleuchtung
+      openings: Fenster & Türen
+      switches: Schalter
+```
