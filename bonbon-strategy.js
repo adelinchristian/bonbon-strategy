@@ -113,42 +113,44 @@ export class BonbonStrategy {
       }
     `;
 
-    const androidGesturesFix = document.createElement('div');
-    androidGesturesFix.classList.add('android-gestures-fix');
-    Object.assign(androidGesturesFix.style, {
-      display: 'block',
-      position: 'absolute',
-      zIndex: '1000',
-      width: '100%',
-      height: '100%',
-      top: 0,
-      left: 0,
-      pointerEvents: 'none',
-    });
-    const fixLeft = document.createElement('div');
-    Object.assign(fixLeft.style, {
-      display: 'block',
-      position: 'absolute',
-      top: 0,
-      pointerEvents: 'all',
-      width: '20px',
-      height: '100%',
-      left: 0,
-      pointerEvents: 'all',
-    });
-    const fixRight = document.createElement('div');
-    Object.assign(fixRight.style, {
-      display: 'block',
-      position: 'absolute',
-      top: 0,
-      pointerEvents: 'all',
-      width: '20px',
-      height: '100%',
-      right: 0,
-      pointerEvents: 'all',
-    });
-    androidGesturesFix.append(fixLeft, fixRight);
-    document.body.append(androidGesturesFix);
+    if (!document.querySelectorAll('.android-gestures-fix').length) {
+      const androidGesturesFix = document.createElement('div');
+      androidGesturesFix.classList.add('android-gestures-fix');
+      Object.assign(androidGesturesFix.style, {
+        display: 'block',
+        position: 'absolute',
+        zIndex: '1000',
+        width: '100%',
+        height: '100%',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+      });
+      const fixLeft = document.createElement('div');
+      Object.assign(fixLeft.style, {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        pointerEvents: 'all',
+        width: '20px',
+        height: '100%',
+        left: 0,
+        pointerEvents: 'all',
+      });
+      const fixRight = document.createElement('div');
+      Object.assign(fixRight.style, {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        pointerEvents: 'all',
+        width: '20px',
+        height: '100%',
+        right: 0,
+        pointerEvents: 'all',
+      });
+      androidGesturesFix.append(fixLeft, fixRight);
+      document.body.append(androidGesturesFix);
+    }
 
     const entities = hass.entities;
     const states = hass.states;
@@ -222,7 +224,10 @@ export class BonbonStrategy {
         area.defltColor = defltColor;
         area.shadeColor = shadeColor;
 
-        const categorizedEntityIds = [area.temperature_entity_id, area.humidity_entity_id];
+        const categorizedEntityIds = [
+          area.temperature_entity_id,
+          area.humidity_entity_id,
+        ];
 
         area._lights = Object.values(entities)
           .filter((e) => {
@@ -258,68 +263,65 @@ export class BonbonStrategy {
               states[lightA.entity_id]?.attributes?.friendly_name ||
               lightB.entity_id;
             return nameA.localeCompare(nameB);
-          })
-        area._switches = Object.values(entities)
-          .filter((e) => {
-            const isSwitch = e.entity_id.startsWith('switch.');
-            const directArea = e.area_id === area.area_id;
-            const device = hass.devices[e.device_id];
-            const deviceArea = device && device.area_id === area.area_id;
-            const isUserEntity = !e.entity_category;
-            const isHidden = e.hidden;
+          });
+        area._switches = Object.values(entities).filter((e) => {
+          const isSwitch = e.entity_id.startsWith('switch.');
+          const directArea = e.area_id === area.area_id;
+          const device = hass.devices[e.device_id];
+          const deviceArea = device && device.area_id === area.area_id;
+          const isUserEntity = !e.entity_category;
+          const isHidden = e.hidden;
 
-            if (
-              isSwitch &&
-              isUserEntity &&
-              (directArea || deviceArea) &&
-              !isHidden
-            ) {
-              categorizedEntityIds.push(e.entity_id);
-              return true;
-            }
-            return false;
-          })
-        area._openings = Object.values(entities)
-          .filter((e) => {
-            const isContact =
-              e.entity_id.startsWith('binary_sensor.') &&
-              e.entity_id.endsWith('_contact');
-            const directArea = e.area_id === area.area_id;
-            const device = hass.devices[e.device_id];
-            const deviceArea = device && device.area_id === area.area_id;
-            const isUserEntity = !e.entity_category;
-            const isHidden = e.hidden || e.labels?.includes('bonbon_hidden');
-            if (
-              isContact &&
-              isUserEntity &&
-              (directArea || deviceArea) &&
-              !isHidden
-            ) {
-              categorizedEntityIds.push(e.entity_id);
-              return true;
-            }
-            return false;
-          })
+          if (
+            isSwitch &&
+            isUserEntity &&
+            (directArea || deviceArea) &&
+            !isHidden
+          ) {
+            categorizedEntityIds.push(e.entity_id);
+            return true;
+          }
+          return false;
+        });
+        area._openings = Object.values(entities).filter((e) => {
+          const isContact =
+            e.entity_id.startsWith('binary_sensor.') &&
+            e.entity_id.endsWith('_contact');
+          const directArea = e.area_id === area.area_id;
+          const device = hass.devices[e.device_id];
+          const deviceArea = device && device.area_id === area.area_id;
+          const isUserEntity = !e.entity_category;
+          const isHidden = e.hidden || e.labels?.includes('bonbon_hidden');
+          if (
+            isContact &&
+            isUserEntity &&
+            (directArea || deviceArea) &&
+            !isHidden
+          ) {
+            categorizedEntityIds.push(e.entity_id);
+            return true;
+          }
+          return false;
+        });
 
-        area._climates = Object.values(entities)
-          .filter((e) => {
-            const isClimate = e.entity_id.startsWith('climate.');
-            const directArea = e.area_id === area.area_id;
-            const device = hass.devices[e.device_id];
-            const deviceArea = device && device.area_id === area.area_id;
-            const isUserEntity = !e.entity_category;
-            const isHidden = e.hidden || e.labels?.includes('bonbon_hidden');
-            if (
-              isClimate &&
-              isUserEntity &&
-              (directArea || deviceArea) &&
-              !isHidden
-            ) {
-              categorizedEntityIds.push(e.entity_id);
-              return true;
-            }
-            return false;
-          })
+        area._climates = Object.values(entities).filter((e) => {
+          const isClimate = e.entity_id.startsWith('climate.');
+          const directArea = e.area_id === area.area_id;
+          const device = hass.devices[e.device_id];
+          const deviceArea = device && device.area_id === area.area_id;
+          const isUserEntity = !e.entity_category;
+          const isHidden = e.hidden || e.labels?.includes('bonbon_hidden');
+          if (
+            isClimate &&
+            isUserEntity &&
+            (directArea || deviceArea) &&
+            !isHidden
+          ) {
+            categorizedEntityIds.push(e.entity_id);
+            return true;
+          }
+          return false;
+        });
         area._misc = Object.values(entities).filter((e) => {
           const isMisc = !categorizedEntityIds.includes(e.entity_id);
           const directArea = e.area_id === area.area_id;
@@ -653,7 +655,8 @@ export class BonbonStrategy {
 
         area._misc.forEach((e) => {
           console.log(e);
-          const isMeasurement = states[e.entity_id]?.attributes?.unit_of_measurement != null;
+          const isMeasurement =
+            states[e.entity_id]?.attributes?.unit_of_measurement != null;
           console.log(isMeasurement);
           miscGrid.cards.push({
             type: 'custom:bubble-card',
@@ -675,7 +678,8 @@ export class BonbonStrategy {
                 action: 'more-info',
               },
             },
-            styles: isMeasurement ? `
+            styles: isMeasurement
+              ? `
               .is-on .bubble-name-container {
                 color: var(--primary-text-color) !important;
               }
@@ -683,7 +687,8 @@ export class BonbonStrategy {
                 background-color: var(--ha-card-background,var(--card-background-color,#fff)) !important;
                 opacity: 1 !important;
               }
-            ` : ''
+            `
+              : '',
           });
         });
         miscSection.cards.push(miscGrid);
