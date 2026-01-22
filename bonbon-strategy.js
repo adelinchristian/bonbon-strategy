@@ -665,7 +665,7 @@ export class BonbonStrategy {
               e.entity_id
             ).split(' (')[0],
             show_state: true,
-            show_last_changed: false,
+            show_last_changed: !isMeasurement,
             use_accent_color: true,
             tap_action: {
               action: 'none',
