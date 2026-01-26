@@ -137,10 +137,10 @@ strategy:
             show_temperature: true
             show_humidity: true
             show_co2: true
-            show_floor_lights_button: true,
-            always_show_floor_lights_button: false,
-            show_area_lights_button: true,
-            always_show_area_lights_button: false,
+            show_floor_lights_button: true
+            always_show_floor_lights_button: false
+            show_area_lights_button: true
+            always_show_area_lights_button: false
             hidden: false
       bonbon_area:
         subview: true
@@ -173,8 +173,8 @@ strategy:
             show_separator: true
             min_columns: 1
             max_columns: 2
-            show_area_lights_button: true,
-            always_show_area_lights_button: true,
+            show_area_lights_button: true
+            always_show_area_lights_button: true
             hidden: false
           bonbon_switches:
             name: Switches
