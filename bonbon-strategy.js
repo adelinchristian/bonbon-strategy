@@ -44,10 +44,10 @@ const defaultConfig = {
           show_temperature: true,
           show_humidity: true,
           show_co2: true,
-          show_floor_lights_button: true,
-          always_show_floor_lights_button: false,
-          show_area_lights_button: true,
-          always_show_area_lights_button: false,
+          show_floor_lights_toggle: true,
+          always_show_floor_lights_toggle: false,
+          show_area_lights_toggle: true,
+          always_show_area_lights_toggle: false,
           hidden: false,
         },
       },
@@ -85,8 +85,8 @@ const defaultConfig = {
           show_separator: true,
           min_columns: 1,
           max_columns: 2,
-          show_area_lights_button: true,
-          always_show_area_lights_button: true,
+          show_area_lights_toggle: true,
+          always_show_area_lights_toggle: true,
           hidden: false,
         },
         bonbon_switches: {
@@ -741,7 +741,7 @@ export class BonbonStrategy {
                       floor.icon ||
                       'mdi:home-floor-' +
                         String(floor.level).replace('-', 'negative-'),
-                    sub_button: sectionConfig.show_floor_lights_button
+                    sub_button: sectionConfig.show_floor_lights_toggle
                       ? {
                           main: (notNightlights || [])
                             .map((e, index, filtered) => {
@@ -751,7 +751,7 @@ export class BonbonStrategy {
                                   show_state: false,
                                   content_layout: 'icon-left',
                                   use_accent_color: true,
-                                  icon: sectionConfig.always_show_floor_lights_button
+                                  icon: sectionConfig.always_show_floor_lights_toggle
                                     ? 'mdi:lightbulb-group'
                                     : '',
                                   tap_action: {
@@ -769,7 +769,7 @@ export class BonbonStrategy {
                             .flat(),
                         }
                       : false,
-                    styles: sectionConfig.always_show_floor_lights_button
+                    styles: sectionConfig.always_show_floor_lights_toggle
                       ? `
                                 .bubble-sub-button,
                                 .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button {
@@ -845,7 +845,7 @@ export class BonbonStrategy {
                         },
                       },
                       sub_button: {
-                        main: sectionConfig.show_area_lights_button
+                        main: sectionConfig.show_area_lights_toggle
                           ? (notNightlights || [])
                               .map((e, index, filtered) => {
                                 return ['off', 'on'].map((state) => {
@@ -854,7 +854,7 @@ export class BonbonStrategy {
                                     show_state: false,
                                     content_layout: 'icon-left',
                                     use_accent_color: true,
-                                    icon: sectionConfig.always_show_area_lights_button
+                                    icon: sectionConfig.always_show_area_lights_toggle
                                       ? 'mdi:lightbulb-group'
                                       : '',
                                     tap_action: {
@@ -975,7 +975,7 @@ export class BonbonStrategy {
                           gap: 0;
                         }
                       ` +
-                        (sectionConfig.always_show_area_lights_button
+                        (sectionConfig.always_show_area_lights_toggle
                           ? `
                                 .bubble-sub-button-container.fixed-top .bubble-sub-button,
                                 .bubble-sub-button-container.fixed-top:not(:has(.background-on)) .bubble-sub-button {
@@ -1177,7 +1177,7 @@ export class BonbonStrategy {
                             card_type: 'separator',
                             name: sectionConfig.name,
                             icon: sectionConfig.icon,
-                            sub_button: sectionConfig.show_area_lights_button
+                            sub_button: sectionConfig.show_area_lights_toggle
                               ? {
                                   main: (notNightlights || [])
                                     .map((e, index, filtered) => {
@@ -1187,7 +1187,7 @@ export class BonbonStrategy {
                                           show_state: false,
                                           content_layout: 'icon-left',
                                           use_accent_color: true,
-                                          icon: sectionConfig.always_show_area_lights_button
+                                          icon: sectionConfig.always_show_area_lights_toggle
                                             ? 'mdi:lightbulb-group'
                                             : '',
                                           tap_action: {
@@ -1205,7 +1205,7 @@ export class BonbonStrategy {
                                     .flat(),
                                 }
                               : false,
-                            styles: sectionConfig.always_show_area_lights_button
+                            styles: sectionConfig.always_show_area_lights_toggle
                               ? `
                                 .bubble-sub-button,
                                 .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button {
@@ -1555,7 +1555,7 @@ export class BonbonStrategy {
 
 customElements.define('ll-strategy-bonbon-strategy', BonbonStrategy);
 console.info(
-  `%c 🍬 Bonbon Strategy %c v1.1.5 `,
+  `%c 🍬 Bonbon Strategy %c v1.1.6 `,
   'background-color: #cfd49b;color: #000;padding: 3px 2px 3px 3px;border-radius: 14px 0 0 14px;font-family: DejaVu Sans,Verdana,Geneva,sans-serif;',
   'background-color: #8e72c3;color: #fff;padding: 3px 3px 3px 2px;border-radius: 0 14px 14px 0;font-family: DejaVu Sans,Verdana,Geneva,sans-serif;',
 );
