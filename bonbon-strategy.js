@@ -44,8 +44,10 @@ const defaultConfig = {
           show_temperature: true,
           show_humidity: true,
           show_co2: true,
-          show_active_lights: true,
-          show_main_lights: true,
+          show_floor_lights_button: true,
+          always_show_floor_lights_button: false,
+          show_area_lights_button: true,
+          always_show_area_lights_button: false,
           hidden: false,
         },
       },
@@ -83,6 +85,8 @@ const defaultConfig = {
           show_separator: true,
           min_columns: 1,
           max_columns: 2,
+          show_area_lights_button: true,
+          always_show_area_lights_button: true,
           hidden: false,
         },
         bonbon_switches: {
@@ -111,7 +115,7 @@ const defaultConfig = {
           min_columns: 1,
           max_columns: 2,
           hidden: false,
-        }
+        },
       },
     },
   },
@@ -185,6 +189,12 @@ export class BonbonStrategy {
       }
       .bubble-dropdown-inner-border {
         display: none !important;
+      }
+      .bubble-separator .bubble-sub-button-container {
+        right: 0;
+      }
+      .bubble-separator .bubble-sub-button {
+        border-radius: 10px;
       }
     `;
 
@@ -429,6 +439,41 @@ export class BonbonStrategy {
                 icon: sectionConfig.icon || 'mdi:sofa',
                 level: 99,
               },
+            }).map((floor, index, floors) => {
+              floor._lights = Object.values(entities)
+                .filter((e) => {
+                  const isLight = e.entity_id.startsWith('light.');
+                  const device = devices[e.device_id];
+                  const area_id = e.area_id || device?.area_id;
+                  const area = hass.areas[area_id];
+                  const onFloor = area?.floor_id == floor.floor_id;
+                  const isUserEntity = !e.entity_category;
+                  const isHidden =
+                    e.hidden || e.labels?.includes('bonbon_hidden');
+
+                  if (isLight && isUserEntity && onFloor && !isHidden) {
+                    return true;
+                  }
+                  return false;
+                })
+                .sort((eA, eB) => {
+                  const rankA = getLightRank(eA);
+                  const rankB = getLightRank(eB);
+                  if (rankA !== rankB) {
+                    return rankA - rankB;
+                  }
+                  const nameA =
+                    eA.name ||
+                    states[eA.entity_id]?.attributes?.friendly_name ||
+                    eA.entity_id;
+                  const nameB =
+                    eB.name ||
+                    states[eB.entity_id]?.attributes?.friendly_name ||
+                    eB.entity_id;
+
+                  return nameA.localeCompare(nameB);
+                });
+              return floor;
             });
 
             const nightlights = Object.values(entities).filter((e) => {
@@ -484,9 +529,10 @@ export class BonbonStrategy {
                     (e.entity_id.includes('co2') &&
                       states[e.entity_id]?.attributes?.unit_of_measurement ===
                         'ppm');
-                  const directArea = e.area_id === area.area_id;
+                  const inArea = e.area_id === area.area_id;
                   const device = devices[e.device_id];
-                  const deviceArea = device && device.area_id === area.area_id;
+                  const deviceInArea =
+                    device && device.area_id === area.area_id;
                   const isUserEntity = !e.entity_category;
                   const isHidden =
                     e.hidden || e.labels?.includes('bonbon_hidden');
@@ -494,7 +540,7 @@ export class BonbonStrategy {
                   if (
                     isCo2 &&
                     isUserEntity &&
-                    (directArea || deviceArea) &&
+                    (inArea || deviceInArea) &&
                     !isHidden
                   ) {
                     categorizedEntityIds.push(e.entity_id);
@@ -506,9 +552,9 @@ export class BonbonStrategy {
                 area._lights = Object.values(entities)
                   .filter((e) => {
                     const isLight = e.entity_id.startsWith('light.');
-                    const directArea = e.area_id === area.area_id;
+                    const inArea = e.area_id === area.area_id;
                     const device = devices[e.device_id];
-                    const deviceArea =
+                    const deviceInArea =
                       device && device.area_id === area.area_id;
                     const isUserEntity = !e.entity_category;
                     const isHidden =
@@ -517,7 +563,7 @@ export class BonbonStrategy {
                     if (
                       isLight &&
                       isUserEntity &&
-                      (directArea || deviceArea) &&
+                      (inArea || deviceInArea) &&
                       !isHidden
                     ) {
                       categorizedEntityIds.push(e.entity_id);
@@ -545,9 +591,9 @@ export class BonbonStrategy {
                 area._switches = Object.values(entities)
                   .filter((e) => {
                     const isSwitch = e.entity_id.startsWith('switch.');
-                    const directArea = e.area_id === area.area_id;
+                    const inArea = e.area_id === area.area_id;
                     const device = devices[e.device_id];
-                    const deviceArea =
+                    const deviceInArea =
                       device && device.area_id === area.area_id;
                     const isUserEntity = !e.entity_category;
                     const isHidden = e.hidden;
@@ -555,7 +601,7 @@ export class BonbonStrategy {
                     if (
                       isSwitch &&
                       isUserEntity &&
-                      (directArea || deviceArea) &&
+                      (inArea || deviceInArea) &&
                       !isHidden
                     ) {
                       categorizedEntityIds.push(e.entity_id);
@@ -579,9 +625,9 @@ export class BonbonStrategy {
                     const isContact =
                       e.entity_id.startsWith('binary_sensor.') &&
                       e.entity_id.endsWith('_contact');
-                    const directArea = e.area_id === area.area_id;
+                    const inArea = e.area_id === area.area_id;
                     const device = devices[e.device_id];
-                    const deviceArea =
+                    const deviceInArea =
                       device && device.area_id === area.area_id;
                     const isUserEntity = !e.entity_category;
                     const isHidden =
@@ -589,7 +635,7 @@ export class BonbonStrategy {
                     if (
                       isContact &&
                       isUserEntity &&
-                      (directArea || deviceArea) &&
+                      (inArea || deviceInArea) &&
                       !isHidden
                     ) {
                       categorizedEntityIds.push(e.entity_id);
@@ -612,9 +658,9 @@ export class BonbonStrategy {
                 area._climates = Object.values(entities)
                   .filter((e) => {
                     const isClimate = e.entity_id.startsWith('climate.');
-                    const directArea = e.area_id === area.area_id;
+                    const inArea = e.area_id === area.area_id;
                     const device = devices[e.device_id];
-                    const deviceArea =
+                    const deviceInArea =
                       device && device.area_id === area.area_id;
                     const isUserEntity = !e.entity_category;
                     const isHidden =
@@ -622,7 +668,7 @@ export class BonbonStrategy {
                     if (
                       isClimate &&
                       isUserEntity &&
-                      (directArea || deviceArea) &&
+                      (inArea || deviceInArea) &&
                       !isHidden
                     ) {
                       categorizedEntityIds.push(e.entity_id);
@@ -644,9 +690,9 @@ export class BonbonStrategy {
                 area._misc = Object.values(entities)
                   .filter((e) => {
                     const isMisc = !categorizedEntityIds.includes(e.entity_id);
-                    const directArea = e.area_id === area.area_id;
+                    const inArea = e.area_id === area.area_id;
                     const device = devices[e.device_id];
-                    const deviceArea =
+                    const deviceInArea =
                       device && device.area_id === area.area_id;
                     const isUserEntity = !e.entity_category;
                     const isHidden =
@@ -654,7 +700,7 @@ export class BonbonStrategy {
                     if (
                       isMisc &&
                       isUserEntity &&
-                      (directArea || deviceArea) &&
+                      (inArea || deviceInArea) &&
                       !isHidden
                     ) {
                       return true;
@@ -681,6 +727,12 @@ export class BonbonStrategy {
               );
               if (floorAreas.length) {
                 if (sectionConfig.show_separator) {
+                  const notNightlights = (floor._lights || []).filter(
+                    (e) =>
+                      nightlights
+                        .map((nightlight) => nightlight.entity_id)
+                        .indexOf(e.entity_id) == -1,
+                  );
                   section.cards.push({
                     type: 'custom:bubble-card',
                     card_type: 'separator',
@@ -689,6 +741,68 @@ export class BonbonStrategy {
                       floor.icon ||
                       'mdi:home-floor-' +
                         String(floor.level).replace('-', 'negative-'),
+                    sub_button: sectionConfig.show_floor_lights_button
+                      ? {
+                          main: (notNightlights || [])
+                            .map((e, index, filtered) => {
+                              return ['off', 'on'].map((state) => {
+                                return {
+                                  entity: e.entity_id,
+                                  show_state: false,
+                                  content_layout: 'icon-left',
+                                  use_accent_color: true,
+                                  icon: sectionConfig.always_show_floor_lights_button
+                                    ? 'mdi:lightbulb-group'
+                                    : '',
+                                  tap_action: {
+                                    action: 'call-service',
+                                    service: 'light.turn_' + state,
+                                    target: {
+                                      entity_id: filtered.map(
+                                        (e) => e.entity_id,
+                                      ),
+                                    },
+                                  },
+                                };
+                              });
+                            })
+                            .flat(),
+                        }
+                      : false,
+                    styles: sectionConfig.always_show_floor_lights_button
+                      ? `
+                                .bubble-sub-button,
+                                .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button {
+                                  background-color: var(--ha-card-background,var(--card-background-color,#fff));
+                                  box-shadow: 0 2px 6px rgba(0,0,0,${isDark ? '0.2' : '0.05'});
+                                }
+                                .bubble-sub-button-container:has(.background-on) .bubble-sub-button {
+                                  color: #fff;
+                                  background-color: var(--bubble-default-color);
+                                }
+                                .bubble-sub-button-container:has(.background-on) .bubble-sub-button:not([data-tap-action*='light.turn_off']),
+                                .bubble-sub-button-container:has(.background-on) .bubble-sub-button[data-tap-action*='light.turn_off'] ~ .bubble-sub-button[data-tap-action*='light.turn_off']{
+                                  display: none !important;
+                                }
+                                .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button:not([data-tap-action*='light.turn_on']),
+                                .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button[data-tap-action*='light.turn_on'] ~ .bubble-sub-button[data-tap-action*='light.turn_on']{
+                                  display: none !important;
+                                }
+                              `
+                      : `
+                                .bubble-sub-button {
+                                  background-color: var(--ha-card-background,var(--card-background-color,#fff));
+                                  box-shadow: 0 2px 6px rgba(0,0,0,${isDark ? '0.2' : '0.05'});
+                                }
+                                .background-on {
+                                  color: #fff;
+                                  background-color: var(--bubble-default-color);
+                                }
+                                .bubble-sub-button-container .bubble-sub-button:not(.background-on),
+                                .bubble-sub-button-container .bubble-sub-button.background-on ~ .bubble-sub-button.background-on {
+                                  display: none !important;
+                                }
+                              `,
                   });
                 }
 
@@ -702,6 +816,12 @@ export class BonbonStrategy {
                     ),
                   square: false,
                   cards: floorAreas.map((area) => {
+                    const notNightlights = (area._lights || []).filter(
+                      (e) =>
+                        nightlights
+                          .map((nightlight) => nightlight.entity_id)
+                          .indexOf(e.entity_id) == -1,
+                    );
                     return {
                       type: 'custom:bubble-card',
                       card_type: 'button',
@@ -725,27 +845,32 @@ export class BonbonStrategy {
                         },
                       },
                       sub_button: {
-                        main: (area._lights || [])
-                          .filter(
-                            (e) =>
-                              nightlights
-                                .map((nightlight) => nightlight.entity_id)
-                                .indexOf(e.entity_id) == -1,
-                          )
-                          .map((e, index, filtered) => {
-                            return {
-                              entity: e.entity_id,
-                              show_state: false,
-                              content_layout: 'icon-left',
-                              tap_action: {
-                                action: 'call-service',
-                                service: 'light.turn_off',
-                                target: {
-                                  entity_id: filtered.map((e) => e.entity_id),
-                                },
-                              },
-                            };
-                          }),
+                        main: sectionConfig.show_area_lights_button
+                          ? (notNightlights || [])
+                              .map((e, index, filtered) => {
+                                return ['off', 'on'].map((state) => {
+                                  return {
+                                    entity: e.entity_id,
+                                    show_state: false,
+                                    content_layout: 'icon-left',
+                                    use_accent_color: true,
+                                    icon: sectionConfig.always_show_area_lights_button
+                                      ? 'mdi:lightbulb-group'
+                                      : '',
+                                    tap_action: {
+                                      action: 'call-service',
+                                      service: 'light.turn_' + state,
+                                      target: {
+                                        entity_id: filtered.map(
+                                          (e) => e.entity_id,
+                                        ),
+                                      },
+                                    },
+                                  };
+                                });
+                              })
+                              .flat()
+                          : [],
                         bottom: [
                           {
                             buttons_layout: 'inline',
@@ -781,7 +906,8 @@ export class BonbonStrategy {
                         sectionConfig.show_co2
                           ? 1.4
                           : 1,
-                      styles: `
+                      styles:
+                        `
                         .fixed-top .bubble-sub-button-container {
                           ${sectionConfig.show_temperature || sectionConfig.show_humidity || sectionConfig.show_co2 ? 'margin-top: 8px;' : ''}
                         }
@@ -796,13 +922,9 @@ export class BonbonStrategy {
                           opacity: 1 !important;
                           background: ${area.lightColor} !important;
                         }
-                        .bubble-sub-button-container .bubble-sub-button:not(.background-on),
-                        .bubble-sub-button-container .bubble-sub-button.background-on ~ .bubble-sub-button.background-on {
-                          display: none !important;
-                        }
-                        .bubble-sub-button-container .bubble-sub-button.background-on {
-                          background: ${area.defltColor} !important;
-                        }
+                        // .bubble-sub-button-container .bubble-sub-button.background-on {
+                        //   background: ${area.defltColor} !important;
+                        // }
                         .bubble-main-icon-container {
                           background: transparent;
                           margin: 0;
@@ -827,7 +949,6 @@ export class BonbonStrategy {
                         .bubble-container:hover .bubble-button-background {
                           background: ${area.defltColor} !important;
                         }
-                        .bubble-container:hover .bubble-sub-button-container .bubble-sub-button.background-on,
                         .bubble-container:hover .bubble-main-icon-container:before {
                           background: ${area.shadeColor} !important;
                         }
@@ -853,7 +974,50 @@ export class BonbonStrategy {
                         .bubble-sub-button-group {
                           gap: 0;
                         }
-                      `,
+                      ` +
+                        (sectionConfig.always_show_area_lights_button
+                          ? `
+                                .bubble-sub-button-container.fixed-top .bubble-sub-button,
+                                .bubble-sub-button-container.fixed-top:not(:has(.background-on)) .bubble-sub-button {
+                                  background: ${area.defltColor} !important;
+                                }
+                                .bubble-container:hover .bubble-sub-button-container.fixed-top .bubble-sub-button,
+                                .bubble-container:hover .bubble-sub-button-container.fixed-top:not(:has(.background-on)) .bubble-sub-button {
+                                  background: ${area.shadeColor} !important;
+                                }
+                                .bubble-sub-button-container.fixed-top:has(.background-on) .bubble-sub-button,
+                                .bubble-container:hover .bubble-sub-button-container.fixed-top:has(.background-on) .bubble-sub-button {
+                                  background: var(--bubble-default-color) !important;
+                                  color: #fff !important;
+                                }
+                                .bubble-sub-button-container.fixed-top:has(.background-on) .bubble-sub-button:not([data-tap-action*='light.turn_off']),
+                                .bubble-sub-button-container.fixed-top:has(.background-on) .bubble-sub-button[data-tap-action*='light.turn_off'] ~ .bubble-sub-button[data-tap-action*='light.turn_off']{
+                                  display: none !important;
+                                }
+                                .bubble-sub-button-container.fixed-top:not(:has(.background-on)) .bubble-sub-button:not([data-tap-action*='light.turn_on']),
+                                .bubble-sub-button-container.fixed-top:not(:has(.background-on)) .bubble-sub-button[data-tap-action*='light.turn_on'] ~ .bubble-sub-button[data-tap-action*='light.turn_on']{
+                                  display: none !important;
+                                }
+                              `
+                          : `
+                                .bubble-sub-button-container.fixed-top .bubble-sub-button {
+                                  background: ${area.defltColor} !important;
+                                }
+                                .bubble-container:hover .bubble-sub-button-container.fixed-top .bubble-sub-button,
+                                .bubble-container:hover .bubble-sub-button-container.fixed-top:not(:has(.background-on)) .bubble-sub-button {
+                                  background: ${area.shadeColor} !important;
+                                }
+                                .bubble-sub-button-container.fixed-top .background-on {
+                                  background: ${area.dfltColor} !important;
+                                }
+                                .bubble-container:hover .bubble-sub-button-container.fixed-top .background-on {
+                                  background: ${area.shadeColor} !important;
+                                }
+                                .bubble-sub-button-container.fixed-top .bubble-sub-button:not(.background-on),
+                                .bubble-sub-button-container.fixed-top .bubble-sub-button.background-on ~ .bubble-sub-button.background-on {
+                                  display: none !important;
+                                }
+                              `),
                     };
                   }),
                 });
@@ -868,8 +1032,10 @@ export class BonbonStrategy {
                   return !config.views.bonbon_area.sections[key].hidden;
                 })
                 .sort((aKey, bKey) => {
-                  const orderA = config.views.bonbon_area.sections[aKey].order ?? 999;
-                  const orderB = config.views.bonbon_area.sections[bKey].order ?? 999;
+                  const orderA =
+                    config.views.bonbon_area.sections[aKey].order ?? 999;
+                  const orderB =
+                    config.views.bonbon_area.sections[bKey].order ?? 999;
                   return orderA - orderB;
                 })
                 .map((key) => {
@@ -999,12 +1165,80 @@ export class BonbonStrategy {
                       break;
                     case 'bonbon_lights':
                       if (area._lights.length) {
+                        const notNightlights = (area._lights || []).filter(
+                          (e) =>
+                            nightlights
+                              .map((nightlight) => nightlight.entity_id)
+                              .indexOf(e.entity_id) == -1,
+                        );
                         if (sectionConfig.show_separator) {
                           section.cards.push({
                             type: 'custom:bubble-card',
                             card_type: 'separator',
                             name: sectionConfig.name,
                             icon: sectionConfig.icon,
+                            sub_button: sectionConfig.show_area_lights_button
+                              ? {
+                                  main: (notNightlights || [])
+                                    .map((e, index, filtered) => {
+                                      return ['off', 'on'].map((state) => {
+                                        return {
+                                          entity: e.entity_id,
+                                          show_state: false,
+                                          content_layout: 'icon-left',
+                                          use_accent_color: true,
+                                          icon: sectionConfig.always_show_area_lights_button
+                                            ? 'mdi:lightbulb-group'
+                                            : '',
+                                          tap_action: {
+                                            action: 'call-service',
+                                            service: 'light.turn_' + state,
+                                            target: {
+                                              entity_id: filtered.map(
+                                                (e) => e.entity_id,
+                                              ),
+                                            },
+                                          },
+                                        };
+                                      });
+                                    })
+                                    .flat(),
+                                }
+                              : false,
+                            styles: sectionConfig.always_show_area_lights_button
+                              ? `
+                                .bubble-sub-button,
+                                .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button {
+                                  background-color: var(--ha-card-background,var(--card-background-color,#fff));
+                                  box-shadow: 0 2px 6px rgba(0,0,0,${isDark ? '0.2' : '0.05'});
+                                }
+                                .bubble-sub-button-container:has(.background-on) .bubble-sub-button {
+                                  color: #fff;
+                                  background-color: var(--bubble-default-color);
+                                }
+                                .bubble-sub-button-container:has(.background-on) .bubble-sub-button:not([data-tap-action*='light.turn_off']),
+                                .bubble-sub-button-container:has(.background-on) .bubble-sub-button[data-tap-action*='light.turn_off'] ~ .bubble-sub-button[data-tap-action*='light.turn_off']{
+                                  display: none !important;
+                                }
+                                .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button:not([data-tap-action*='light.turn_on']),
+                                .bubble-sub-button-container:not(:has(.background-on)) .bubble-sub-button[data-tap-action*='light.turn_on'] ~ .bubble-sub-button[data-tap-action*='light.turn_on']{
+                                  display: none !important;
+                                }
+                              `
+                              : `
+                                .bubble-sub-button {
+                                  background-color: var(--ha-card-background,var(--card-background-color,#fff));
+                                  box-shadow: 0 2px 6px rgba(0,0,0,${isDark ? '0.2' : '0.05'});
+                                }
+                                .background-on {
+                                  color: #fff;
+                                  background-color: var(--bubble-default-color);
+                                }
+                                .bubble-sub-button-container .bubble-sub-button:not(.background-on),
+                                .bubble-sub-button-container .bubble-sub-button.background-on ~ .bubble-sub-button.background-on {
+                                  display: none !important;
+                                }
+                              `,
                           });
                         }
                         section.cards.push({
