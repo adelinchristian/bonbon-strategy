@@ -295,7 +295,7 @@ export class BonbonStrategy {
                   card_type: 'separator',
                   name:
                     sectionConfig.style == 'inline'
-                      ? devices[entities[weather_entity_id].device_id].name ||
+                      ? devices[entities[weather_entity_id]?.device_id]?.name ||
                         sectionConfig.name
                       : sectionConfig.name,
                   icon:
