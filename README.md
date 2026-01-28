@@ -21,8 +21,9 @@ If an entity isn't assigned to an area or if it's disabled or hidden, it won't s
 * Switches
 * Openings
 * Covers
-* Miscellaneous sensors (almost every entity not the above, hide them either by disabling the `Visible` setting or by adding the label `hidden`)
+* Miscellaneous (almost everything that isn't part of the above)
 
+You can hide anything with the label `hidden` or by disabling the `Visible` setting.
 You can add the prefix `bonbon_` to any of these labels in case it interferes with your setup.
 
 ## Dependencies
