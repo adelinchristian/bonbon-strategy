@@ -219,3 +219,4 @@ death_star_controls:
     - light.death_star
     - switch.arm
 ```
+You can restrict it to a specific area by adding it under `bonbon_area` > `sections` and adding `area_id: area_id`.
