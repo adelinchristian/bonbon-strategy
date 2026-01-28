@@ -189,10 +189,18 @@ strategy:
             min_columns: 1
             max_columns: 2
             hidden: false
+          bonbon_media:
+            name: Media Players
+            icon: mdi:disc-player
+            order: 5
+            show_separator: true
+            min_columns: 1
+            max_columns: 1
+            hidden: false
           bonbon_openings:
             name: Doors & Windows
             icon: mdi:window-closed-variant
-            order: 5
+            order: 6
             show_separator: true
             min_columns: 1
             max_columns: 2
@@ -200,7 +208,7 @@ strategy:
           bonbon_covers:
             name: Shutters & Shades
             icon: mdi:roller-shade
-            order: 6
+            order: 7
             show_separator: true
             min_columns: 1
             max_columns: 2
