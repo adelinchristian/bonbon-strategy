@@ -15,10 +15,12 @@ If an entity isn't assigned to an area or if it's disabled or hidden, it won't s
 * Favorites (add the label `favorite` to an entity)
 * Floors
 * Areas (add the label `hidden` to hide an area)
-* Temperature and humidity
+* Temperature, Humidity and CO2
 * Climate
 * Lights (add the labels `mainlight` and `nightlight` if needed)
 * Switches
+* Openings
+* Covers
 * Miscellaneous sensors (almost every entity not the above, hide them either by disabling the `Visible` setting or by adding the label `hidden`)
 
 You can add the prefix `bonbon_` to any of these labels in case it interferes with your setup.
@@ -190,6 +192,14 @@ strategy:
             name: Doors & Windows
             icon: mdi:window-closed-variant
             order: 5
+            show_separator: true
+            min_columns: 1
+            max_columns: 2
+            hidden: false
+          bonbon_covers:
+            name: Shutters & Shades
+            icon: mdi:roller-shade
+            order: 6
             show_separator: true
             min_columns: 1
             max_columns: 2
