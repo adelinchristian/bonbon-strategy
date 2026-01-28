@@ -384,8 +384,8 @@ export class BonbonStrategy {
                   columns:
                     sectionConfig.columns ||
                     Math.min(
-                      Math.max(sectionConfig.min_columns, persons.length),
-                      sectionConfig.max_columns,
+                      Math.max(sectionConfig.min_columns || 1, persons.length),
+                      sectionConfig.max_columns || 1,
                     ),
                   square: false,
                   cards: persons.map((e) => {
@@ -432,8 +432,11 @@ export class BonbonStrategy {
                   columns:
                     sectionConfig.columns ||
                     Math.min(
-                      Math.max(sectionConfig.min_columns, favorites.length),
-                      sectionConfig.max_columns,
+                      Math.max(
+                        sectionConfig.min_columns || 1,
+                        favorites.length,
+                      ),
+                      sectionConfig.max_columns || 1,
                     ),
                   square: false,
                   cards: favorites.map((e) => {
@@ -876,8 +879,11 @@ export class BonbonStrategy {
                     columns:
                       sectionConfig.columns ||
                       Math.min(
-                        Math.max(sectionConfig.min_columns, floorAreas.length),
-                        sectionConfig.max_columns,
+                        Math.max(
+                          sectionConfig.min_columns || 1,
+                          floorAreas.length,
+                        ),
+                        sectionConfig.max_columns || 1,
                       ),
                     square: false,
                     cards: floorAreas.map((area) => {
@@ -1130,14 +1136,14 @@ export class BonbonStrategy {
                             sectionConfig.columns ||
                             Math.min(
                               Math.max(
-                                sectionConfig.min_columns,
+                                sectionConfig.min_columns || 1,
                                 [
                                   area.temperature_entity_id,
                                   area.humidity_entity_id,
                                   area.co2_entity_id,
                                 ].filter((e_id) => e_id).length,
                               ),
-                              sectionConfig.max_columns,
+                              sectionConfig.max_columns || 1,
                             ),
                           square: false,
                           cards: [
@@ -1203,10 +1209,10 @@ export class BonbonStrategy {
                               sectionConfig.columns ||
                               Math.min(
                                 Math.max(
-                                  sectionConfig.min_columns,
+                                  sectionConfig.min_columns || 1,
                                   area._climates.length,
                                 ),
-                                sectionConfig.max_columns,
+                                sectionConfig.max_columns || 1,
                               ),
                             square: false,
                             cards: area._climates.map((e) => {
@@ -1314,10 +1320,10 @@ export class BonbonStrategy {
                               sectionConfig.columns ||
                               Math.min(
                                 Math.max(
-                                  sectionConfig.min_columns,
+                                  sectionConfig.min_columns || 1,
                                   area._lights.length,
                                 ),
-                                sectionConfig.max_columns,
+                                sectionConfig.max_columns || 1,
                               ),
                             square: false,
                             cards: area._lights.map((e) => {
@@ -1352,10 +1358,10 @@ export class BonbonStrategy {
                               sectionConfig.columns ||
                               Math.min(
                                 Math.max(
-                                  sectionConfig.min_columns,
+                                  sectionConfig.min_columns || 1,
                                   area._switches.length,
                                 ),
-                                sectionConfig.max_columns,
+                                sectionConfig.max_columns || 1,
                               ),
                             square: false,
                             cards: area._switches.map((e) => {
@@ -1390,10 +1396,10 @@ export class BonbonStrategy {
                               sectionConfig.columns ||
                               Math.min(
                                 Math.max(
-                                  sectionConfig.min_columns,
+                                  sectionConfig.min_columns || 1,
                                   area._openings.length,
                                 ),
-                                sectionConfig.max_columns,
+                                sectionConfig.max_columns || 1,
                               ),
                             square: false,
                             cards: area._openings.map((e) => {
@@ -1433,10 +1439,10 @@ export class BonbonStrategy {
                               sectionConfig.columns ||
                               Math.min(
                                 Math.max(
-                                  sectionConfig.min_columns,
+                                  sectionConfig.min_columns || 1,
                                   area._misc.length,
                                 ),
-                                sectionConfig.max_columns,
+                                sectionConfig.max_columns || 1,
                               ),
                             square: false,
                             cards: area._misc.map((e) => {
@@ -1471,8 +1477,10 @@ export class BonbonStrategy {
                               section.cards.push({
                                 type: 'custom:bubble-card',
                                 card_type: 'separator',
-                                name: sectionConfig.name,
-                                icon: sectionConfig.icon,
+                                name: sectionConfig.name || 'Custom Section',
+                                icon:
+                                  sectionConfig.icon ||
+                                  'mdi:view-dashboard-edit',
                               });
                             }
                             section.cards.push({
@@ -1481,10 +1489,10 @@ export class BonbonStrategy {
                                 sectionConfig.columns ||
                                 Math.min(
                                   Math.max(
-                                    sectionConfig.min_columns,
-                                    area._misc.length,
+                                    sectionConfig.min_columns || 1,
+                                    userCards.length,
                                   ),
-                                  sectionConfig.max_columns,
+                                  sectionConfig.max_columns || 1,
                                 ),
                               square: false,
                               cards: userCards,
@@ -1501,7 +1509,7 @@ export class BonbonStrategy {
                   subview: true,
                   path: `area_${area.area_id}`,
                   type: 'sections',
-                  max_columns: config?.views?.bonbon_area?.max_columns,
+                  max_columns: config?.views?.bonbon_area?.max_columns || 1,
                   sections: areaSections,
                 });
               });
@@ -1532,8 +1540,8 @@ export class BonbonStrategy {
                     section.cards.push({
                       type: 'custom:bubble-card',
                       card_type: 'separator',
-                      name: sectionConfig.name,
-                      icon: sectionConfig.icon,
+                      name: sectionConfig.name || 'Custom Section',
+                      icon: sectionConfig.icon || 'mdi:view-dashboard-edit',
                     });
                   }
                   section.cards.push({
@@ -1541,8 +1549,11 @@ export class BonbonStrategy {
                     columns:
                       sectionConfig.columns ||
                       Math.min(
-                        Math.max(sectionConfig.min_columns, area._misc.length),
-                        sectionConfig.max_columns,
+                        Math.max(
+                          sectionConfig.min_columns || 1,
+                          userCards.length,
+                        ),
+                        sectionConfig.max_columns || 1,
                       ),
                     square: false,
                     cards: userCards,
@@ -1559,7 +1570,7 @@ export class BonbonStrategy {
         title: dashboardName,
         path: 'home',
         type: 'sections',
-        max_columns: config?.views?.bonbon_home?.max_columns,
+        max_columns: config?.views?.bonbon_home?.max_columns || 1,
         sections: homeSections,
       };
       views.unshift(homeView);
