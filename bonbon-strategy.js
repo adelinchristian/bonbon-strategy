@@ -98,10 +98,19 @@ const defaultConfig = {
           max_columns: 2,
           hidden: false,
         },
+        bonbon_media: {
+          name: 'Media Players',
+          icon: 'mdi:disc-player',
+          order: 5,
+          show_separator: true,
+          min_columns: 1,
+          max_columns: 1,
+          hidden: false,
+        },
         bonbon_openings: {
           name: 'Doors & Windows',
           icon: 'mdi:window-closed-variant',
-          order: 5,
+          order: 6,
           show_separator: true,
           min_columns: 1,
           max_columns: 2,
@@ -110,7 +119,7 @@ const defaultConfig = {
         bonbon_covers: {
           name: 'Shutters & Shades',
           icon: 'mdi:roller-shade',
-          order: 6,
+          order: 7,
           show_separator: true,
           min_columns: 1,
           max_columns: 2,
@@ -705,6 +714,42 @@ export class BonbonStrategy {
                         e.labels?.includes('bonbon_hidden');
                       if (
                         isContact &&
+                        isUserEntity &&
+                        (inArea || deviceInArea) &&
+                        !isHidden &&
+                        !categorizedEntityIds.includes(e.entity_id)
+                      ) {
+                        categorizedEntityIds.push(e.entity_id);
+                        return true;
+                      }
+                      return false;
+                    })
+                    .sort((eA, eB) => {
+                      const nameA =
+                        eA.name ||
+                        states[eA.entity_id]?.attributes?.friendly_name ||
+                        eA.entity_id;
+                      const nameB =
+                        eB.name ||
+                        states[eA.entity_id]?.attributes?.friendly_name ||
+                        eB.entity_id;
+                      return nameA.localeCompare(nameB);
+                    });
+
+                  area._media = Object.values(entities)
+                    .filter((e) => {
+                      const isMedia = e.entity_id.startsWith('media_player.');
+                      const inArea = e.area_id === area.area_id;
+                      const device = devices[e.device_id];
+                      const deviceInArea =
+                        device && device.area_id === area.area_id;
+                      const isUserEntity = !e.entity_category;
+                      const isHidden =
+                        e.hidden ||
+                        e.labels?.includes('hidden') ||
+                        e.labels?.includes('bonbon_hidden');
+                      if (
+                        isMedia &&
                         isUserEntity &&
                         (inArea || deviceInArea) &&
                         !isHidden &&
@@ -1420,6 +1465,49 @@ export class BonbonStrategy {
                                 tap_action: {
                                   action: 'none',
                                 },
+                              };
+                            }),
+                          });
+                        }
+                        break;
+                      case 'bonbon_media':
+                        if (area._media.length) {
+                          if (sectionConfig.show_separator) {
+                            section.cards.push({
+                              type: 'custom:bubble-card',
+                              card_type: 'separator',
+                              name: sectionConfig.name,
+                              icon: sectionConfig.icon,
+                            });
+                          }
+                          section.cards.push({
+                            type: 'grid',
+                            columns:
+                              sectionConfig.columns ||
+                              Math.min(
+                                Math.max(
+                                  sectionConfig.min_columns || 1,
+                                  area._media.length,
+                                ),
+                                sectionConfig.max_columns || 1,
+                              ),
+                            square: false,
+                            cards: area._media.map((e) => {
+                              return {
+                                type: 'custom:bubble-card',
+                                card_type: 'media-player',
+                                entity: e.entity_id,
+                                show_state: true,
+                                show_last_changed: true,
+                                use_accent_color: true,
+                                tap_action: {
+                                  action: 'none',
+                                },
+                                button_action: {
+                                  tap_action: {
+                                    action: 'more-info',
+                                  },
+                                }
                               };
                             }),
                           });
