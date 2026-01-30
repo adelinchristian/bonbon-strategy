@@ -858,16 +858,15 @@ export class BonbonStrategy {
                         e.labels?.includes('hidden') ||
                         e.labels?.includes('bonbon_hidden');
                       
-                      const filtered = entities.filter(ent =>
-                        ent.entity_id.toLowerCase().includes("power") ||
-                        ent.entity_id.toLowerCase().includes("energy")
-                      );
+                      const entityId = e.entity_id.toLowerCase();
+
+                      const isPowerOrEnergy = entityId.includes("power") || entityId.includes("energy");
                       
                       if (
                         isUserEntity &&
                         (inArea || deviceInArea) &&
                         !isHidden && 
-                        !filtered &&
+                        !isPowerOrEnergy &&
                         !categorizedEntityIds.includes(e.entity_id)
                       ) {
                         return true;
