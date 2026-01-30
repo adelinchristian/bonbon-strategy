@@ -860,7 +860,7 @@ export class BonbonStrategy {
                       
                       const entityId = e.entity_id.toLowerCase();
 
-                      const isPowerOrEnergy = entityId.includes("power") || entityId.includes("energy");
+                      const isPowerOrEnergy = entityId.includes("power") || entityId.includes("energy") || entityId.includes("voltage") || entityId.includes("current")|| entityId.includes("timestamp") ;
                       
                       if (
                         isUserEntity &&
