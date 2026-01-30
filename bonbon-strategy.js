@@ -857,10 +857,17 @@ export class BonbonStrategy {
                         e.hidden ||
                         e.labels?.includes('hidden') ||
                         e.labels?.includes('bonbon_hidden');
+                      
+                      const filtered = entities.filter(ent =>
+                        ent.entity_id.toLowerCase().includes("power") ||
+                        ent.entity_id.toLowerCase().includes("energy")
+                      );
+                      
                       if (
                         isUserEntity &&
                         (inArea || deviceInArea) &&
-                        !isHidden &&
+                        !isHidden && 
+                        !filtered
                         !categorizedEntityIds.includes(e.entity_id)
                       ) {
                         return true;
