@@ -867,7 +867,7 @@ export class BonbonStrategy {
                         isUserEntity &&
                         (inArea || deviceInArea) &&
                         !isHidden && 
-                        !filtered
+                        !filtered &&
                         !categorizedEntityIds.includes(e.entity_id)
                       ) {
                         return true;
