@@ -431,7 +431,7 @@ export class BonbonStrategy {
                   e.labels?.includes('hidden') ||
                   e.labels?.includes('bonbon_hidden');
 
-                if (isFavorite && isUserEntity && !isHidden) {
+                if (isFavorite && isUserEntity && !isHidden && !isClutterEntity(e)) {
                   return true;
                 }
 
@@ -859,14 +859,13 @@ export class BonbonStrategy {
                         e.labels?.includes('bonbon_hidden');
                       
                       const entityId = e.entity_id.toLowerCase();
-
                       const isPowerOrEnergy = entityId.includes("power") || entityId.includes("energy") || entityId.includes("voltage") || entityId.includes("current")|| entityId.includes("timestamp") ;
                       
                       if (
                         isUserEntity &&
                         (inArea || deviceInArea) &&
                         !isHidden && 
-                        !isPowerOrEnergy &&
+                        !isClutterEntity(e) &&
                         !categorizedEntityIds.includes(e.entity_id)
                       ) {
                         return true;
@@ -1837,6 +1836,11 @@ export class BonbonStrategy {
       return dashboard;
     }
   }
+}
+
+function isClutterEntity(e) {
+  const id = e.entity_id.toLowerCase();
+  return id.includes("power") || id.includes("energy") || id.includes("voltage") || id.includes("current") || id.includes("timestamp");
 }
 
 function getWeatherIcon(weatherType) {
